@@ -1,1 +1,1 @@
-python3 binary_search_requests.py -u "https://0a13006504ef39c582daacc900be00f0.web-security-academy.net/filter?" -pn category -ac 10 -m 1
+  python3 binary_search_requests.py -u <link> -pn category -ac 10 -m 1
