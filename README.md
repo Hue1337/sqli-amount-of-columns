@@ -4,4 +4,4 @@
 
 ## Functionality which will be added soon:
 - proxy
-- binary search algorithm
+- binary search algorithm (is working, need to add requests for oracle dbs)
