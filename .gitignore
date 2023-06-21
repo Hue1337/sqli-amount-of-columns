@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+test.py
 run.sh
 1run.sh
 # C extensions
